@@ -95,15 +95,15 @@ function draw() {
   if (gameState === "gameover") {
     fill(250);
     textAlign(CENTER, CENTER);
-    textSize(32);
+    textSize(40);
     stroke(0);
     strokeWeight(4);
     fill("tomato");
     text("GAME OVER", width / 2, height / 2 - 30);
 
-    noStroke();
-    fill(250);
-    textSize(20);
+    stroke(0);
+    fill(255);
+    textSize(25);
     text("Score: " + score, width / 2, height / 2 + 10);
     text("Press ENTER to restart", width / 2, height / 2 + 50);
   }
