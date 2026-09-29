@@ -18,6 +18,7 @@
 let bird;
 let pipes = [];
 let score = 0;
+let highScore = 0;
 let spawnCounter = 0;
 let minecraftFont;
 
@@ -44,6 +45,11 @@ async function setup() {
   textFont(minecraftFont);
   bird = new Bird(120, height / 2);
   pipes.push(new Pipe(width + 40));
+  
+  let savedHighScore = localStorage.getItem("highScore");
+  if (savedHighScore !== null) {
+    highScore = parseInt(savedHighScore);
+  }
 }
 
 function draw() {
@@ -79,6 +85,13 @@ function draw() {
       if (pipes[i].offscreen()) {
         pipes.splice(i, 1);
       }
+
+      if (score > highScore) {
+        highScore = score;
+      // Using localStorage.setItem() to save the new high score to localStorage
+      localStorage.setItem("High Score", highScore);
+      }
+
     }
 
     bird.show();
@@ -99,13 +112,14 @@ function draw() {
     stroke(0);
     strokeWeight(4);
     fill("tomato");
-    text("GAME OVER", width / 2, height / 2 - 30);
+    text("GAME OVER", width / 2, height / 2 - 50);
 
     stroke(0);
     fill(255);
     textSize(25);
-    text("Score: " + score, width / 2, height / 2 + 10);
-    text("Press ENTER to restart", width / 2, height / 2 + 50);
+    text("Score: " + score, width / 2, height / 2 - 10);
+    text("High Score: " + highScore, width / 2, height / 2 + 20);
+    text("Press ENTER to restart", width / 2, height / 2 + 60);
   }
 }
 
