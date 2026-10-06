@@ -43,9 +43,5 @@ class Bird {
     imageMode(CENTER);
     image(beeImg, this.pos.x, this.pos.y, this.w, this.h);
     pop();
-    // fill(255, 205, 80);
-    // circle(this.pos.x, this.pos.y, this.r * 2);
-    // fill(40);
-    // circle(this.pos.x + 6, this.pos.y - 4, 4);
   }
 }

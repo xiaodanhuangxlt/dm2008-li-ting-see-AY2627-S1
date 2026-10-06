@@ -32,7 +32,8 @@ const PIPE_GAP = 120;
 const PIPE_W = 60;
 
 // Game states: "playing" or "gameover" — add more if you need them
-let gameState = "playing";
+// "playing" | "gameover" | "start"
+let gameState = "start";
 
 /* ----------------- Setup & Draw ----------------- */
 async function setup() {
@@ -43,9 +44,9 @@ async function setup() {
   bgImg = await loadImage("assets/desert.png");
   minecraftFont = await loadFont("assets/minecraft.ttf");
   textFont(minecraftFont);
-  bird = new Bird(120, height / 2);
+  bird = new Bird(width / 2, height / 2);
   pipes.push(new Pipe(width + 40));
-  
+
   let savedHighScore = localStorage.getItem("highScore");
   if (savedHighScore !== null) {
     highScore = parseInt(savedHighScore);
@@ -55,6 +56,9 @@ async function setup() {
 function draw() {
   // background(18, 22, 28);
   drawBackground();
+  if (gameState === "start") {
+    drawStartScreen();
+  }
 
   if (gameState === "playing") {
     bird.update();
@@ -88,10 +92,9 @@ function draw() {
 
       if (score > highScore) {
         highScore = score;
-      // Using localStorage.setItem() to save the new high score to localStorage
-      localStorage.setItem("High Score", highScore);
+        // Using localStorage.setItem() to save the new high score to localStorage
+        localStorage.setItem("highScore", highScore);
       }
-
     }
 
     bird.show();
@@ -130,10 +133,67 @@ function drawBackground() {
   bgX -= BG_SPEED;
   if (bgX <= -width) bgX = 0;
 }
+
+function drawStartScreen() {
+  const letters = "FlappyBee".split("");
+  const colors = [
+    "#f7c948",
+    "#4aa3ff",
+    "#ff5fa2",
+    "#a259ff",
+    "#ff8c42",
+    "#3ddc97",
+    "#4aa3ff",
+    "#f7c948",
+    "#ff5fa2",
+  ];
+
+  let hover = sin(frameCount * 0.1) * 10;
+
+  textAlign(LEFT, CENTER);
+  textSize(48);
+  stroke(0);
+  strokeWeight(6);
+  let gap = 4;
+  let headingW = 0;
+  for (let i = 0; i < letters.length; i++) {
+    headingW += textWidth(letters[i]) + gap;
+  }
+  headingW -= gap; // remove last gap
+
+  let x = width / 2 - headingW / 2;
+  // draw each letter
+  for (let i = 0; i < letters.length; i++) {
+    fill(colors[i]);
+    text(letters[i], x, height * 0.25 + hover);
+    x += textWidth(letters[i]) + gap;
+  }
+
+  let beeY = height * 0.48 + hover;
+  imageMode(CENTER);
+  image(beeImg, width / 2, beeY, 34, 33);
+
+  textAlign(CENTER, CENTER);
+  textSize(22);
+  strokeWeight(4);
+  fill(255);
+  text("PRESS SPACE", width / 2, height * 0.72);
+
+  textAlign(RIGHT, TOP);
+  textSize(28);
+  text(highScore, width - 20, 20);
+  textSize(12);
+  text("HIGH SCORE", width - 20, 55);
+
+  noStroke();
+}
+
 /* ----------------- Input ----------------- */
 function keyPressed() {
   // Make the bird flap on space or UP_ARROW — call bird.flap()
-  if (gameState === "playing" && key == " ") {
+  if (gameState === "start" && key == " ") {
+    gameState = "playing";
+  } else if (gameState === "playing" && key == " ") {
     bird.flap();
   } else if (gameState === "gameover" && key === "Enter") {
     resetGame();
@@ -141,7 +201,7 @@ function keyPressed() {
 }
 
 function resetGame() {
-  bird = new Bird(120, height / 2);
+  bird = new Bird(width / 2, height / 2);
   pipes = [];
   pipes.push(new Pipe(width + 40));
   score = 0;
