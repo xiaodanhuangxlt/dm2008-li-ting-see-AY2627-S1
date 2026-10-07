@@ -22,6 +22,8 @@ let highScore = 0;
 let spawnCounter = 0;
 let minecraftFont;
 
+let bgm, hitSound;
+
 let bgImg;
 let bgX = 0;
 const BG_SPEED = 1;
@@ -44,6 +46,12 @@ async function setup() {
   bgImg = await loadImage("assets/desert.png");
   minecraftFont = await loadFont("assets/minecraft.ttf");
   textFont(minecraftFont);
+
+  bgm = new Audio("assets/c416bgm.mp3");
+  bgm.loop = true;
+  bgm.volume = 1;
+  hitSound = new Audio("assets/hit.mp3");
+
   bird = new Bird(width / 2, height / 2);
   pipes.push(new Pipe(width + 40));
 
@@ -77,6 +85,9 @@ function draw() {
       // When the bird hits a pipe, trigger game over
       if (pipes[i].hits(bird)) {
         gameState = "gameover";
+        hitSound.currentTime = 0;
+        hitSound.play();
+        bgm.pause(); // stops "playing" state bgm
       }
 
       // When the bird passes a pipe, increment the score
@@ -192,6 +203,7 @@ function drawStartScreen() {
 function keyPressed() {
   // Make the bird flap on space or UP_ARROW — call bird.flap()
   if (gameState === "start" && key == " ") {
+    bgm.play();
     gameState = "playing";
   } else if (gameState === "playing" && key == " ") {
     bird.flap();
@@ -207,6 +219,8 @@ function resetGame() {
   score = 0;
   spawnCounter = 0;
   gameState = "playing";
+  bgm.currentTime = 0; // start from beginning
+  bgm.play();
 }
 
 /* ----------------- Classes ----------------- */
