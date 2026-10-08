@@ -84,8 +84,7 @@ function draw() {
 
       // When the bird hits a pipe, trigger game over
       if (pipes[i].hits(bird)) {
-        gameState = "gameover";
-        hitSound.currentTime = 0;
+        gameState = "gameover"; hitSound.currentTime = 0;
         hitSound.play();
         bgm.pause(); // stops "playing" state bgm
       }
