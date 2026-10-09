@@ -32,4 +32,4 @@ This is my personal mono-repo for DM2008. It contains all my work across the sem
 
 ---
 
-_For teaching and learning purposes only. All work © <Li Ting See>._
+_For teaching and learning purposes only. All work © Li Ting See._
