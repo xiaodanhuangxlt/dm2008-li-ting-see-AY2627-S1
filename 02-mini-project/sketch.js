@@ -51,7 +51,7 @@ async function setup() {
   bgm.loop = true;
   bgm.volume = 1;
   hitSound = new Audio("assets/hit.mp3");
-
+  hitSound.volume = 0.5;
   bird = new Bird(width / 2, height / 2);
   pipes.push(new Pipe(width + 40));
 
@@ -84,7 +84,8 @@ function draw() {
 
       // When the bird hits a pipe, trigger game over
       if (pipes[i].hits(bird)) {
-        gameState = "gameover"; hitSound.currentTime = 0;
+        gameState = "gameover";
+        hitSound.currentTime = 0;
         hitSound.play();
         bgm.pause(); // stops "playing" state bgm
       }
@@ -218,7 +219,7 @@ function resetGame() {
   score = 0;
   spawnCounter = 0;
   gameState = "playing";
-  bgm.currentTime = 0; // start from beginning
+  // bgm.currentTime = 0; // start from beginning
   bgm.play();
 }
 
