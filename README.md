@@ -1,4 +1,4 @@
-# DM2008 — Firstname Lastname
+# DM2008 — Li Ting See
 
 **Course:** DM2008: Programming for Interaction  
 **Academic Year:** AY2526 Semester 2  
@@ -32,4 +32,4 @@ This is my personal mono-repo for DM2008. It contains all my work across the sem
 
 ---
 
-_For teaching and learning purposes only. All work © <your name here>._
+_For teaching and learning purposes only. All work © <Li Ting See>._
