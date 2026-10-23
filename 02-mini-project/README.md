@@ -1,4 +1,4 @@
-# Mini Project — Title
+# Mini Project — FlappyBee
 
 <!-- Replace "Title" with the name of your project, e.g. "Mini Project — Pong Remix" -->
 

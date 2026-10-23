@@ -1,54 +1,37 @@
-# Sensor Jam — Title
-
-<!-- Replace "Title" with the name of your project, e.g. "Sensor Jam — Theremin Visualiser" -->
-
----
+# Sensor Jam — Super Mario
 
 ### The Project
 
-<!-- What does your sketch do, and what physical input drives it?
-     How does the sensor data translate into something on screen?
-     A few sentences is all you need. -->
+We created an interactive Super Mario visual using Arduino, p5.js and Gravity URM09 Ultrasonic Distance Measurement Sensor to measure the distance between sensor and an object. Mario grows and shrinks in size based on the distance detected by the ultrasonic sensor, recreating the effect of Mario powering up with a mega mushroom.
+
+The ultrasonic sensor measures distance in centimetres and sends the data from Arduino to p5.js through serial communication. The distance values are mapped from 5–100 cm to a Mario sprite width of 50–400 pixels. As distance increases, Mario grows bigger. We used the lerp() function to create smooth transitions between sizes instead of sudden changes.
 
 ---
 
 ### Output
 
-![screenshot](readme-assets/screenshot-01.png)
-
-<!-- Drop a screenshot or GIF of your sketch in action.
-     Got a photo of your physical setup too? Throw it in.
-     Save everything to a readme-assets/ folder inside this project folder. -->
-
-[Watch Online](https://your-link-here)
-
-<!-- Replace the link above with a URL to a video of your project in action.
-     ⚠️ Make sure the file or page is set to public before submitting. -->
+![screenshot](readme-assets/sensorjam-image04.png)
 
 ---
 
-<!-- ─────────────────────────────────────────────────────
-     GOING FURTHER — want to document more? Try any of these:
+### ✍️ Reflection
 
-     ### ✍️ Reflection
-     A short write-up of your process — what worked, what didn't,
-     and what you'd take further if you had more time.
+We wanted to recreate the effect of Mario growing bigger after collecting a mushroom, using real-world distance as the interaction.
+We managed to connect the ultrasonic sensor to p5.js and successfully mapped the distance readings to Mario's size.
+If we had more time, we would add animations and sound effects, such as Mario jumping to hit the brick and collecting the mushroom before growing bigger.
 
-     ### 🛠️ Hardware
-     List the physical components you used.
-     - Arduino Uno
-     - Ultrasonic sensor (HC-SR04)
+### 🛠️ Hardware
 
-     ### 🔍 Sensor Mapping
-     How does your sensor data map to visual or sonic output?
-     e.g. "Distance (0–400cm) → circle size (10–400px) using map()"
+List of physical components you used:
 
-     ### 🧩 Something I Found Interesting
-     A snippet, a technique, a happy accident.
-     ```js
-     // your code here
-     ```
+- Arduino Uno
+- Gravity URM09 Ultrasonic Distance Measurement Sensor
 
-     ### 🔗 References
-     Anything that helped — tutorials, datasheets, examples.
-     ───────────────────────────────────────────────────── -->
+### 🔍 Sensor Mapping
+
+Distance (5–100 cm) → Mario's width (50–400 px) using map().
+
+### 🔗 References
+
+- DFRobot Gravity URM09 Ultrasonic Distance Sensor documentation
+- Coding Jam starter template provided in class
