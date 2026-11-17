@@ -1,17 +1,13 @@
-# Week ## — Topic Name
-
-<!-- Replace ## with the week number and Topic Name with the week's focus -->
-<!-- You may also refer to each week's slide for the Topic Name -->
-<!-- e.g. Week 03 — Arrays & Functions -->
+# Week 02 — Control FLows and Interactivity
 
 ---
 
 ### Activities
 
-| Activity | What I Made                   |
-| -------- | ----------------------------- |
-| `1a`     | <!-- one line description --> |
-| `1b`     | <!-- one line description --> |
+| Activity | What I Made                                                                                                      |
+| -------- | ---------------------------------------------------------------------------------------------------------------- |
+| `2a`     | Built an interactive sketch in p5.js with multiple visual "modes" and practiced using both if…else and switch(). |
+| `2b`     | <!-- one line description -->                                                                                    |
 
 <!-- Add or remove rows to match the activities for this week. -->
 
