@@ -1,30 +1,18 @@
-// Droplet: a single falling water drop shown when the plant is watered.
-class Droplet {
-  // s = overall screen scale (for speed), unit = screen pixels per sprite pixel (for size)
-  constructor(x, y, groundY, s, unit) {
-    this.x = x;
-    this.y = y;
-    this.groundY = groundY;
-    this.s = s;
-    this.unit = unit;
-    this.vy = random(120, 220) * s;
-  }
+// Effects: the status pictures that float above plants.
 
-  update(dt) {
-    this.vy += 700 * this.s * dt;
-    this.y += this.vy * dt;
-  }
+// Which picture goes with which status. These are your pictures in assets/ui/.
+const BADGE_IMAGES = {
+  dead: "ui/skull", // the plant has died
+  ready: "ui/star", // fully grown, ready to collect
+  thirsty: "ui/waterdroplet", // the soil is dry
+};
+const BADGE = { size: 32 }; // badge size in pixels at normal size
 
-  get done() {
-    return this.y >= this.groundY;
-  }
-
-  draw(assets) {
-    const img = assets.get("assets/fx/droplet");
-    if (!img) return;
-    const w = Math.round(img.width * this.unit);
-    const h = Math.round(img.height * this.unit);
-    noTint();
-    image(img, Math.round(this.x - w / 2), Math.round(this.y - h / 2), w, h);
-  }
+// Draw one status picture floating just above a plant.
+function drawBadge(img, x, y, s, t) {
+  const bob = Math.sin(t * 3) * 3 * s; // gentle up-and-down
+  const k = (BADGE.size * s) / Math.max(img.width, img.height);
+  const w = img.width * k,
+    h = img.height * k;
+  image(img, x - w / 2, y - h - 6 * s + bob, w, h);
 }

@@ -2,11 +2,16 @@
 class ToolManager {
   constructor() {
     this.tools = [
-      { id: "plant", key: "p", label: "Plant" },
-      { id: "water", key: "w", label: "Water" },
-      { id: "clear", key: "c", label: "Clear" },
+      { id: "plant", key: "p", label: "Plant", icon: "tools/bundle" },
+      { id: "water", key: "w", label: "Water", icon: "tools/watercan" },
+      { id: "clear", key: "c", label: "Clear", icon: "tools/shovel" },
     ];
     this.current = "plant";
+    }
+
+  // The tool that is selected right now (the whole object, so we can read its icon).
+  get active() {
+    return this.tools.find((t) => t.id === this.current);
   }
 
   // Returns true if the key matched a tool.

@@ -178,6 +178,16 @@ class SoilGrid {
     return null;
   }
 
+  // All the squares in the rectangle between square a and square b (a drag-selection).
+  // A selection stays inside one bed: if b is in a different bed, only a is returned.
+  rect(a, b) {
+    if (!a) return [];
+    if (!b || b.bed !== a.bed) return [a];
+    const c0 = Math.min(a.col, b.col), c1 = Math.max(a.col, b.col);
+    const r0 = Math.min(a.row, b.row), r1 = Math.max(a.row, b.row);
+    return this.squares.filter((s) => s.bed === a.bed && s.col >= c0 && s.col <= c1 && s.row >= r0 && s.row <= r1);
+  }
+
   // Draw one square as a shape,
   // using whatever fill and stroke are currently set.
   shape(sq) {

@@ -22,7 +22,9 @@ class Plant {
     stageSprout: 12,
     stageGrowing: 35,
     stageBloom: 75,
+    readyAt: 100, // growth needed before the flower can be collected
   };
+
   static SWAY = 0.02; // gentle sprite sway in radians (set 0 for none)
   // species: one entry of SPECIES (see assets.js). Omit it to get a random flower.
   constructor(species) {
@@ -55,6 +57,24 @@ class Plant {
 
   get isDead() {
     return this.state === "dead";
+  }
+
+  // Fully grown and still alive: it can be collected.
+  get isReady() {
+    return !this.isDead && this.growth >= Plant.CFG.readyAt;
+  }
+
+  // Alive but the soil is getting dry: time to water.
+  get isThirsty() {
+    return !this.isDead && this.moisture < Plant.CFG.healthyMin;
+  }
+
+  // Which status picture (if any) should float above this plant?
+  get badge() {
+    if (this.isDead) return "dead";
+    if (this.isThirsty) return "thirsty";
+    if (this.isReady) return "ready";
+    return null;
   }
 
   water() {

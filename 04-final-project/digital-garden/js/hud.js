@@ -104,7 +104,15 @@ class Hud {
     const stateName =
       plant.state.charAt(0).toUpperCase() + plant.state.slice(1);
     const rowH = 22 * s;
-    const h = 38 * s + rowH * 3;
+    const hint = plant.isDead
+      ? "Withered. Press C to clear it"
+      : plant.isThirsty
+        ? "Thirsty. Press W to water" +
+          (plant.isReady ? " (or C to collect)" : "")
+        : plant.isReady
+          ? "Fully grown! Press C to collect"
+          : "";
+    const h = 38 * s + rowH * 3 + (hint ? 20 * s : 0);
     noStroke();
     fill(0, 0, 0, 120);
     rect(x, y, w, h, 14 * s);
@@ -129,5 +137,11 @@ class Hud {
       text(r[0], x + 14 * s, ry);
       this.bar(x + 84 * s, ry + 3 * s, w - 84 * s - 14 * s, 8 * s, r[1], r[2]);
     });
+    if (hint) {
+      fill(PALETTE.sun);
+      textSize(12 * s);
+      textAlign(LEFT, TOP);
+      text(hint, x + 14 * s, y + 38 * s + rowH * 3 + 2 * s);
+    }
   }
 }
