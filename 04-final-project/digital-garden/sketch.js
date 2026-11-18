@@ -224,7 +224,9 @@ function drawHeldTool() {
 // choose one. With a flower in your hand, a click (or a drag) plants it in the empty squares.
 function plantSeeds(squares) {
   if (!chosen) {
-    picker.open();
+    // the bundle only opens on an empty square: a full square has no room for a new flower
+    if (squares.some((sq) => !garden.plantAt(sq))) picker.open();
+    else hud.say("That square already has a plant. Click an empty square");
     return;
   }
 
@@ -267,7 +269,8 @@ function waterSquares(squares) {
 function clearSquares(squares) {
   let cleared = 0,
     collected = 0,
-    growing = 0;
+    growing = 0,
+    dry = 0;
   let lastName = "";
   squares.forEach((sq) => {
     const plant = garden.plantAt(sq);
@@ -280,7 +283,9 @@ function clearSquares(squares) {
       lastName = plant.species.name;
       garden.remove(sq);
       collected++;
-    } else growing++; // alive but not finished yet: leave it alone
+    } else if (plant.growth >= Plant.CFG.readyAt)
+      dry++; // fully grown but too dry: water it first
+    else growing++; // alive but not finished yet: leave it alone
   });
   if (collected > 0) {
     collection.bump();
@@ -295,6 +300,8 @@ function clearSquares(squares) {
         ? "Square cleared, ready to replant"
         : `Cleared ${cleared} squares`,
     );
+  } else if (dry > 0) {
+    hud.say("Too dry to collect. Water it first");
   } else if (growing > 0) {
     hud.say(
       "Still growing. Only withered or fully grown plants can be cleared",

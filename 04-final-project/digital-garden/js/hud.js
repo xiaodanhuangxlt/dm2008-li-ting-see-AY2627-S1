@@ -34,7 +34,7 @@ class Hud {
       if (!video.ready) label = "Loading video...";
       else if (clock.paused) label += " - paused";
       else if (clock.timeScale !== 1) label += ` - x${clock.timeScale}`;
-      this.pill(pad, pad, label, s, false);
+      this.pill(pad, pad, label, s, false, true); // true = steady digits, so the clock does not jiggle
 
       if (plant) {
         this.drawStatus(plant, width - pad - 210 * s, pad, 210 * s, s);
@@ -86,18 +86,39 @@ class Hud {
     text(str, x, y);
   }
 
-  // A rounded label. Returns its width so labels can be placed side by side.
-  pill(x, y, label, s, active) {
+  // steady = true gives every digit the same width (the widest one). The Minecraft font is
+  // proportional ("1" is narrower than "0"), so without this the clock chip would grow and
+  // shrink as the time changes.
+  pill(x, y, label, s, active, steady = false) {
     textSize(14 * s);
     const padX = 12 * s;
-    const w = textWidth(label) + padX * 2;
+    let cell = 0;
+    if (steady)
+      for (let d = 0; d <= 9; d++) cell = Math.max(cell, textWidth(String(d)));
+    const isDigit = (ch) => steady && ch >= "0" && ch <= "9";
+    let textW = 0;
+    for (const ch of label) textW += isDigit(ch) ? cell : textWidth(ch);
+    const w = textW + padX * 2;
     const h = 30 * s;
     noStroke();
     fill(active ? color(PALETTE.cream) : color(0, 0, 0, 120));
     rect(x, y, w, h, h / 2);
     fill(active ? color("#3b2f2a") : color(PALETTE.cream));
     textAlign(LEFT, CENTER);
-    text(label, x + padX, y + h / 2 + 1);
+    if (!steady) {
+      text(label, x + padX, y + h / 2 + 1);
+    } else {
+      let px = x + padX;
+      for (const ch of label) {
+        if (isDigit(ch)) {
+          text(ch, px + (cell - textWidth(ch)) / 2, y + h / 2 + 1); // centred in its own cell
+          px += cell;
+        } else {
+          text(ch, px, y + h / 2 + 1);
+          px += textWidth(ch);
+        }
+      }
+    }
     return w;
   }
 
@@ -133,8 +154,8 @@ class Hud {
     const hint = plant.isDead
       ? "Withered. Press C to clear it"
       : plant.isThirsty
-        ? plant.isReady
-          ? "Dry. W to water, or C to collect"
+        ? plant.growth >= Plant.CFG.readyAt
+          ? "Fully grown but dry. Water it to collect"
           : "Thirsty. Press W to water"
         : plant.isReady
           ? "Fully grown! Press C to collect"

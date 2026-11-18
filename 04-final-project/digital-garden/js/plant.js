@@ -61,7 +61,7 @@ class Plant {
 
   // Fully grown and still alive: it can be collected.
   get isReady() {
-    return !this.isDead && this.growth >= Plant.CFG.readyAt;
+    return !this.isDead && this.growth >= Plant.CFG.readyAt && !this.isThirsty;
   }
 
   // Alive but the soil is getting dry: time to water.
