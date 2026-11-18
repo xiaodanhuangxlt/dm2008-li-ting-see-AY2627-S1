@@ -6,7 +6,7 @@ const BADGE_IMAGES = {
   ready: "ui/star", // fully grown, ready to collect
   thirsty: "ui/waterdroplet", // the soil is dry
 };
-const BADGE = { size: 32 }; // badge size in pixels at normal size
+const BADGE = { size: 18 }; // badge size in pixels at normal size
 
 // Draw one status picture floating just above a plant.
 function drawBadge(img, x, y, s, t) {

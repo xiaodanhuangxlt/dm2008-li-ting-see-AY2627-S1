@@ -49,6 +49,6 @@ class GameClock {
   get label() {
     const hh = String(this.hour).padStart(2, "0");
     const mm = String(this.minute).padStart(2, "0");
-    return `Day ${this.day} · ${hh}:${mm}`;
+    return `Day ${this.day} - ${hh}:${mm}`;
   }
 }

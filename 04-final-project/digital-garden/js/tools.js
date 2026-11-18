@@ -4,10 +4,10 @@ class ToolManager {
     this.tools = [
       { id: "plant", key: "p", label: "Plant", icon: "tools/bundle" },
       { id: "water", key: "w", label: "Water", icon: "tools/watercan" },
-      { id: "clear", key: "c", label: "Clear", icon: "tools/shovel" },
+      { id: "clear", key: "c", label: "Clear / Collect", icon: "tools/shovel" },
     ];
     this.current = "plant";
-    }
+  }
 
   // The tool that is selected right now (the whole object, so we can read its icon).
   get active() {

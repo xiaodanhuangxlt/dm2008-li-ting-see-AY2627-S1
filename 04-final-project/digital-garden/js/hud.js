@@ -31,33 +31,59 @@ class Hud {
       this.drawTools(tools, s, pad);
 
       let label = clock.label;
-      if (!video.ready) label = "Loading video…";
-      else if (clock.paused) label += " · paused";
-      else if (clock.timeScale !== 1) label += ` · ×${clock.timeScale}`;
+      if (!video.ready) label = "Loading video...";
+      else if (clock.paused) label += " - paused";
+      else if (clock.timeScale !== 1) label += ` - x${clock.timeScale}`;
       this.pill(pad, pad, label, s, false);
 
-      if (plant) this.drawStatus(plant, width - pad - 210 * s, pad, 210 * s, s);
+      if (plant) {
+        this.drawStatus(plant, width - pad - 210 * s, pad, 210 * s, s);
+        // the flower's name at the bottom, just above where the messages pop up
+        textSize(18 * s);
+        textAlign(CENTER, CENTER);
+        this.shadowText(
+          plant.species.name,
+          width / 2,
+          height - pad - 92 * s,
+          s,
+          255,
+        );
+      }
 
-      textSize(12 * s);
+      textSize(13 * s);
       textAlign(LEFT, BOTTOM);
-      noStroke();
-      fill(247, 233, 205, 170);
-      text(
-        "H hide UI · F fullscreen · Space pause · T speed · G grid · B sprite bounds",
+      this.shadowText(
+        "H hide UI - F fullscreen - Space pause - T speed - G grid - B sprite bounds",
         pad,
         height - pad * 0.6,
+        s,
+        255,
       );
     }
 
     // messages still show when the interface is hidden
     const left = this.toast.until - millis();
     if (left > 0) {
-      noStroke();
-      textSize(16 * s);
+      textSize(18 * s);
       textAlign(CENTER, CENTER);
-      fill(247, 233, 205, 255 * constrain(left / 600, 0, 1));
-      text(this.toast.text, width / 2, height - pad - 60 * s);
+      this.shadowText(
+        this.toast.text,
+        width / 2,
+        height - pad - 60 * s,
+        s,
+        255 * constrain(left / 600, 0, 1),
+      );
     }
+  }
+
+  // Text with a dark shadow behind it (like Minecraft), so it stays readable on any background.
+  // alpha = 0-255, how visible the text is (the toast fades out with it).
+  shadowText(str, x, y, s, alpha) {
+    noStroke();
+    fill(20, 14, 10, alpha * 0.85);
+    text(str, x + 2 * s, y + 2 * s); // the shadow, a little down and to the right
+    fill(247, 233, 205, alpha);
+    text(str, x, y);
   }
 
   // A rounded label. Returns its width so labels can be placed side by side.
@@ -107,8 +133,9 @@ class Hud {
     const hint = plant.isDead
       ? "Withered. Press C to clear it"
       : plant.isThirsty
-        ? "Thirsty. Press W to water" +
-          (plant.isReady ? " (or C to collect)" : "")
+        ? plant.isReady
+          ? "Dry. W to water, or C to collect"
+          : "Thirsty. Press W to water"
         : plant.isReady
           ? "Fully grown! Press C to collect"
           : "";
@@ -119,7 +146,7 @@ class Hud {
     fill(PALETTE.cream);
     textAlign(LEFT, TOP);
     textSize(14 * s);
-    text(`${stageName} · ${stateName}`, x + 14 * s, y + 10 * s);
+    text(`${stageName} - ${stateName}`, x + 14 * s, y + 10 * s);
     const rows = [
       ["Moisture", plant.moisture, PALETTE.water],
       [

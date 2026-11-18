@@ -82,6 +82,10 @@ class Assets {
     ["skull", "star", "waterdroplet"].forEach((n) =>
       this.load(`ui/${n}`, { trim: true }),
     );
+    // the chest icon in the corner (if it is missing, a plain brown box is drawn)
+    this.load("ui/chest", { trim: true });
+    // the chest window that shows your collection
+    this.load("ui/ChestInventory");
   }
 
   load(key, opts = {}) {

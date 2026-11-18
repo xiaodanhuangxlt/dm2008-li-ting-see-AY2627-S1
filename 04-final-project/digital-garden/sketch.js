@@ -2,22 +2,40 @@
 // P / W / C pick Plant / Water / Clear, then click or drag over soil squares.
 // H hide UI · F fullscreen · Space pause · T speed · G grid · B sprite bounds
 
-let grid, clock, video, tools, assets, hud, garden, picker;
+let grid,
+  clock,
+  video,
+  tools,
+  assets,
+  hud,
+  garden,
+  picker,
+  inventory,
+  collection;
+let mcFont; // the Minecraft font
 let dragStart = null; // the square where the mouse went down (for drag-selecting)
 let chosen = null; // the flower species in your hand (null = none chosen yet)
+let pressedChest = false; // did the mouse go down on the chest?
 let showGrid = false;
 let showBounds = false;
 const SPEEDS = [1, 4, 12, 16];
 let speedIdx = 0;
 let bgm;
+let minecraftFont;
 
 // How big the tool icon is (in pixels at normal size) and where it floats next to the mouse.
 const TOOL_ICON = { size: 30, offsetX: 0.45, offsetY: 0.45 };
 const HELD_FLOWER = "bloom"; // picture of the flower held
 
-function setup() {
+// preload() runs first and waits until the font file has loaded.
+function preload() {
+  mcFont = loadFont("assets/minecraft.ttf");
+}
+
+async function setup() {
   createCanvas(windowWidth, windowHeight);
-  textFont("system-ui, -apple-system, Segoe UI, sans-serif");
+  minecraftFont = await loadFont("assets/minecraft.ttf");
+  textFont(minecraftFont); // every text() in the game now uses the Minecraft font
   drawingContext.imageSmoothingQuality = "high"; // smoother when big pictures are shrunk
   grid = new SoilGrid();
   clock = new GameClock(7.5); // 07:30
@@ -28,6 +46,8 @@ function setup() {
   hud = new Hud();
   garden = new Garden();
   picker = new Picker();
+  inventory = new Inventory();
+  collection = new Collection();
 
   bgm = new Audio("assets/c416bgm.mp3");
   bgm.loop = true;
@@ -49,7 +69,7 @@ function draw() {
   clear();
   const hovered = grid.squareAt(mouseX, mouseY);
   // (no square is highlighted while a window is open)
-  const picked = picker.isOpen
+  const picked = overlayOpen()
     ? []
     : dragStart
       ? grid.rect(dragStart, hovered)
@@ -76,14 +96,30 @@ function draw() {
   hud.draw(
     clock,
     tools,
-    dragStart || picker.isOpen ? null : garden.plantAt(hovered),
+    dragStart || overlayOpen() ? null : garden.plantAt(hovered),
     video,
   );
+  if (hud.visible) collection.drawChest(assets, inventory);
   picker.draw(assets);
+  collection.drawWindow(assets, inventory);
   const holding = drawHeldTool();
   video.drawWarning();
-  const overSlot = picker.isOpen && picker.slotAt(mouseX, mouseY) >= 0;
-  cursor(holding ? "none" : hovered || overSlot ? "pointer" : "default");
+  const overButton =
+    (picker.isOpen && picker.slotAt(mouseX, mouseY) >= 0) ||
+    (collection.isOpen && collection.slotAt(mouseX, mouseY) >= 0);
+  const overChest = hud.visible && collection.chestHit(mouseX, mouseY);
+  cursor(
+    holding
+      ? "none"
+      : hovered || overButton || overChest
+        ? "pointer"
+        : "default",
+  );
+}
+
+// Is a window (the picker or the collection) open? Then the garden ignores the mouse.
+function overlayOpen() {
+  return picker.isOpen || collection.isOpen;
 }
 
 // Screen pixels per sprite pixel, so the plant is sized to the square it stands on.
@@ -105,7 +141,11 @@ function drawBadges() {
     if (!kind || !assets.ok(BADGE_IMAGES[kind])) return;
     const [x, y] = grid.foot(sq);
     const img = assets.get(plant.spriteKeys(plant.shownStage)[0]);
-    const top = img ? img.height * spriteUnit(sq) : 0;
+    // tall bushes would push the badge into the row behind, so cap how high it floats
+    const top = Math.min(
+      img ? img.height * spriteUnit(sq) : 0,
+      grid.width(sq) * 0.7,
+    );
     drawBadge(
       assets.get(BADGE_IMAGES[kind]),
       x,
@@ -137,7 +177,8 @@ function drawBounds(sq, plant) {
 // Returns true if an icon was drawn (the normal arrow cursor is hidden then).
 function drawHeldTool() {
   const tool = tools.active;
-  if (picker.isOpen) return false; // the picker has its own look
+  if (overlayOpen()) return false; // the windows have their own look
+  if (hud.visible && collection.chestHit(mouseX, mouseY)) return false; // over the chest: normal cursor
   // with the Plant tool and a flower chosen, the flower itself is in your hand
   const inHand =
     tool && tool.id === "plant" && chosen
@@ -222,35 +263,65 @@ function waterSquares(squares) {
   else hud.say(watered === 1 ? "Watered" : `Watered ${watered} squares`);
 }
 
+// One tool, two jobs: a dead plant is cleared away, a fully grown flower is collected.
 function clearSquares(squares) {
   let cleared = 0,
-    alive = 0;
+    collected = 0,
+    growing = 0;
+  let lastName = "";
   squares.forEach((sq) => {
     const plant = garden.plantAt(sq);
     if (!plant) return;
     if (plant.isDead) {
       garden.remove(sq);
       cleared++;
-    } else alive++;
+    } else if (plant.isReady) {
+      inventory.add(plant.species.id); // into the collection
+      lastName = plant.species.name;
+      garden.remove(sq);
+      collected++;
+    } else growing++; // alive but not finished yet: leave it alone
   });
-  if (cleared > 0)
+  if (collected > 0) {
+    collection.bump();
+    hud.say(
+      collected === 1
+        ? `Collected a ${lastName}!`
+        : `Collected ${collected} flowers!`,
+    );
+  } else if (cleared > 0) {
     hud.say(
       cleared === 1
         ? "Square cleared, ready to replant"
         : `Cleared ${cleared} squares`,
     );
-  else if (alive > 0) hud.say("Only withered plants can be cleared");
-  else hud.say("Nothing to clear");
+  } else if (growing > 0) {
+    hud.say(
+      "Still growing. Only withered or fully grown plants can be cleared",
+    );
+  } else hud.say("Nothing to clear");
 }
 
 // Pressing remembers where the drag started. Releasing does the work on the whole rectangle.
 function mousePressed() {
-  if (picker.isOpen) return false; // the picker handles its own clicks (see mouseReleased)
-  dragStart = grid.squareAt(mouseX, mouseY);
+  if (overlayOpen()) return false; // the windows handle their own clicks (see mouseReleased)
+  pressedChest = hud.visible && collection.chestHit(mouseX, mouseY);
+  dragStart = pressedChest ? null : grid.squareAt(mouseX, mouseY);
   return false;
 }
 
 function mouseReleased() {
+  // 0. The collection window is open: any click closes it.
+  if (collection.isOpen) {
+    collection.close();
+    return false;
+  }
+  // 0b. A click on the chest opens the collection window.
+  if (pressedChest) {
+    pressedChest = false;
+    if (collection.chestHit(mouseX, mouseY)) collection.toggle();
+    return false;
+  }
   // 1. The picker is open: a click on a slot picks that flower, a click outside closes it.
   if (picker.isOpen) {
     const i = picker.slotAt(mouseX, mouseY);
@@ -277,8 +348,9 @@ function keyPressed() {
   if (keyCode === ESCAPE) {
     dragStart = null; // cancel a drag
     picker.close();
+    collection.close();
   }
-  if (picker.isOpen) return false; // no tool keys while choosing a flower
+  if (overlayOpen()) return false; // no tool keys while a window is open
   if (key.toLowerCase() === "p") chosen = null; // P puts the flower back: the bundle shows again
   if (tools.select(key)) return false;
   const k = key.toLowerCase();

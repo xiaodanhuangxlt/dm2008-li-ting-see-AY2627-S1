@@ -21,6 +21,16 @@ const PANELS = {
     slotH: 266,
     showHeight: 460,
   },
+  chest: {
+    key: "ui/ChestInventory",
+    width: 1915,
+    height: 2048,
+    colX: [133, 545, 957, 1368],
+    rowY: [337, 723, 1106, 1491],
+    slotW: 411,
+    slotH: 386,
+    showHeight: 460,
+  },
 };
 
 // ---- shared helpers: used by the bundle window now and by the chest window in Step 11 ----
@@ -28,13 +38,16 @@ const PANELS = {
 // Where the window sits on screen: centred. "sc" = screen pixels per picture pixel.
 function panelLayout(P) {
   const sc = (P.showHeight * hud.s) / P.height;
-  const w = P.width * sc, h = P.height * sc;
-  return { sc, w, h, x: width / 2 - w / 2, y: height / 2 - h / 2 };
+  const w = P.width * sc,
+    h = P.height * sc;
+  // 45 * hud.s lifts the window so the name under it clears the P / W / C buttons
+  return { sc, w, h, x: width / 2 - w / 2, y: height / 2 - h / 2 - 40 * hud.s };
 }
 
 // The on-screen box of slot number i (0-15), counting left to right, top to bottom.
 function slotBox(i, L, P) {
-  const col = i % 4, row = Math.floor(i / 4);
+  const col = i % 4,
+    row = Math.floor(i / 4);
   return {
     x: L.x + P.colX[col] * L.sc,
     y: L.y + P.rowY[row] * L.sc,
@@ -89,7 +102,8 @@ function drawSlotFlower(assets, i, b, dim) {
   const pic = assets.get(`plants/${SPECIES[i].id}_bloom`);
   if (!pic) return;
   const k = Math.min(b.w / pic.width, b.h / pic.height) * 0.85;
-  const w = pic.width * k, h = pic.height * k;
+  const w = pic.width * k,
+    h = pic.height * k;
   if (dim) tint(30, 30, 30, 170);
   image(pic, b.x + (b.w - w) / 2, b.y + (b.h - h) / 2, w, h);
   noTint();
@@ -125,10 +139,18 @@ class Picker {
     this.isOpen = false;
   }
 
-  open() { this.isOpen = true; }
-  close() { this.isOpen = false; }
-  slotAt(mx, my) { return slotAt(mx, my, PANELS.bundle); }
-  overPanel(mx, my) { return overPanel(mx, my, PANELS.bundle); }
+  open() {
+    this.isOpen = true;
+  }
+  close() {
+    this.isOpen = false;
+  }
+  slotAt(mx, my) {
+    return slotAt(mx, my, PANELS.bundle);
+  }
+  overPanel(mx, my) {
+    return overPanel(mx, my, PANELS.bundle);
+  }
 
   draw(assets) {
     if (!this.isOpen) return;
