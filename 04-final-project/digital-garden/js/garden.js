@@ -22,16 +22,22 @@ class Garden {
   // Every { sq, plant } pair, ordered back to front. Squares higher up the screen are further
   // away, so they are drawn first and the closer plants overlap them (like real depth).
   get sorted() {
-    return [...this.cells.values()].sort((a, b) => a.sq.center[1] - b.sq.center[1]);
+    return [...this.cells.values()].sort(
+      (a, b) => a.sq.center[1] - b.sq.center[1],
+    );
   }
 
   // Let every plant grow by simDt seconds. Long gaps (a hidden tab) are cut into slices so a
   // plant still goes through each stage, but never into more than 240 slices, to stay fast.
   update(simDt) {
-    if (simDt <= 0) return;
+    if (simDt <= 0) return 0;
     const steps = Math.min(240, Math.max(1, Math.ceil(simDt / 0.25)));
+    let newlyReady = 0; // plants that became ready to collect during this update
     this.cells.forEach((cell) => {
+      const wasReady = cell.plant.isReady;
       for (let i = 0; i < steps; i++) cell.plant.update(simDt / steps);
+      if (!wasReady && cell.plant.isReady) newlyReady++;
     });
+    return newlyReady;
   }
 }

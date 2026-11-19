@@ -11,7 +11,8 @@ let grid,
   garden,
   picker,
   inventory,
-  collection;
+  collection,
+  sounds;
 let mcFont; // the Minecraft font
 let dragStart = null; // the square where the mouse went down (for drag-selecting)
 let chosen = null; // the flower species in your hand (null = none chosen yet)
@@ -32,6 +33,11 @@ function preload() {
   mcFont = loadFont("assets/minecraft.ttf");
 }
 
+// Browsers only allow sound after you have interacted with the page, so start the music on the first click or key.
+function startMusic() {
+  if (bgm && bgm.paused) bgm.play().catch(() => {});
+}
+
 async function setup() {
   createCanvas(windowWidth, windowHeight);
   minecraftFont = await loadFont("assets/minecraft.ttf");
@@ -48,6 +54,7 @@ async function setup() {
   picker = new Picker();
   inventory = new Inventory();
   collection = new Collection();
+  sounds = new Sounds();
 
   bgm = new Audio("assets/c416bgm.mp3");
   bgm.loop = true;
@@ -64,7 +71,7 @@ function draw() {
 
   const simDt = video.ready ? clock.tick(rawDt) : 0;
   video.follow(clock);
-  garden.update(simDt);
+  if (garden.update(simDt) > 0) sounds.play("ready"); // one chime, however many ripened together
 
   clear();
   const hovered = grid.squareAt(mouseX, mouseY);
@@ -218,6 +225,15 @@ function drawHeldTool() {
   return true;
 }
 
+// While the garden is paused (Space), time stands still, so the garden tools do nothing.
+// Returns true if the action should stop here.
+function blockedByPause() {
+  if (!clock.paused) return false;
+  hud.say("Paused. Press Space to resume");
+  sounds.play("error");
+  return true;
+}
+
 // Each one takes a list of squares and does its job on every square that allows it.
 
 // The Plant tool has two jobs. With no flower in your hand, a click opens the bundle so you can
@@ -226,19 +242,24 @@ function plantSeeds(squares) {
   if (!chosen) {
     // the bundle only opens on an empty square: a full square has no room for a new flower
     if (squares.some((sq) => !garden.plantAt(sq))) picker.open();
-    else hud.say("That square already has a plant. Click an empty square");
+    else {
+      hud.say("That square already has a plant. Click an empty square");
+      sounds.play("error");
+    }
     return;
   }
-
+  if (blockedByPause()) return; // choosing a flower still works while paused, planting does not
   let planted = 0;
   squares.forEach((sq) => {
     if (garden.plantAt(sq)) return; // already taken
     garden.add(sq, new Plant(chosen)); // every plant is its own Plant object
     planted++;
   });
-  if (planted === 0)
+  if (planted > 0) sounds.play("plant"); // once per click or drag, not once per square
+  if (planted === 0) {
     hud.say("Those squares already have plants. Clear them first");
-  else if (planted < squares.length)
+    sounds.play("error"); // nothing could be planted
+  } else if (planted < squares.length)
     hud.say(
       `Planted ${planted} ${chosen.name} seeds (${squares.length - planted} squares were taken)`,
     );
@@ -251,6 +272,7 @@ function plantSeeds(squares) {
 }
 
 function waterSquares(squares) {
+  if (blockedByPause()) return;
   let watered = 0,
     soggy = false;
   squares.forEach((sq) => {
@@ -260,13 +282,17 @@ function waterSquares(squares) {
     watered++;
     if (plant.moisture > Plant.CFG.soggyAbove) soggy = true;
   });
-  if (watered === 0) hud.say("Nothing to water here");
-  else if (soggy) hud.say("Careful, the soil is getting soggy");
+  if (watered > 0) sounds.play("water"); // once, however many squares were watered
+  if (watered === 0) {
+    hud.say("Nothing to water here");
+    sounds.play("error");
+  } else if (soggy) hud.say("Careful, the soil is getting soggy");
   else hud.say(watered === 1 ? "Watered" : `Watered ${watered} squares`);
 }
 
 // One tool, two jobs: a dead plant is cleared away, a fully grown flower is collected.
 function clearSquares(squares) {
+  if (blockedByPause()) return;
   let cleared = 0,
     collected = 0,
     growing = 0,
@@ -287,6 +313,10 @@ function clearSquares(squares) {
       dry++; // fully grown but too dry: water it first
     else growing++; // alive but not finished yet: leave it alone
   });
+
+  if (cleared > 0) sounds.play("shovel"); // once per clear, however many dead plants
+  if (collected > 0) sounds.pops(collected); // one pop per flower, at most POP_MAX
+
   if (collected > 0) {
     collection.bump();
     hud.say(
@@ -302,15 +332,21 @@ function clearSquares(squares) {
     );
   } else if (dry > 0) {
     hud.say("Too dry to collect. Water it first");
+    sounds.play("error");
   } else if (growing > 0) {
     hud.say(
-      "Still growing. Only withered or fully grown plants can be cleared",
+      "Only dead plants can be cleared, or fully grown flowers collected",
     );
-  } else hud.say("Nothing to clear");
+    sounds.play("error");
+  } else {
+    hud.say("Nothing to clear");
+    sounds.play("error");
+  }
 }
 
 // Pressing remembers where the drag started. Releasing does the work on the whole rectangle.
 function mousePressed() {
+  startMusic();
   if (overlayOpen()) return false; // the windows handle their own clicks (see mouseReleased)
   pressedChest = hud.visible && collection.chestHit(mouseX, mouseY);
   dragStart = pressedChest ? null : grid.squareAt(mouseX, mouseY);
@@ -352,6 +388,7 @@ function mouseReleased() {
 }
 
 function keyPressed() {
+  startMusic();
   if (keyCode === ESCAPE) {
     dragStart = null; // cancel a drag
     picker.close();
