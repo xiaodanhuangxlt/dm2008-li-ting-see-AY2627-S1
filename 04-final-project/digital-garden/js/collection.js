@@ -1,12 +1,9 @@
-// Collection: the chest icon in the corner (with the total on it) and the window that opens
-// when you click it, showing how many of each flower you have collected.
-
-const CHEST = { size: 64, margin: 24 }; // icon size and distance from the corner (at normal size)
+const CHEST = { size: 64, margin: 24 }; // icon size and distance from the corner
 
 class Collection {
   constructor() {
     this.isOpen = false;
-    this.pulse = 0; // 1 -> 0 after collecting a flower, makes the chest bounce
+    this.pulse = 0; // 1 -> 0 after collecting a flower, make the chest bounce
   }
 
   toggle() {
@@ -25,7 +22,7 @@ class Collection {
     return overPanel(mx, my, PANELS.chest);
   }
 
-  // Where the chest is on screen: bottom-right corner.
+  // chest at bottom-right corner of screen
   box() {
     const size = CHEST.size * hud.s,
       m = CHEST.margin * hud.s;
@@ -37,7 +34,7 @@ class Collection {
     return mx >= b.x && mx <= b.x + b.size && my >= b.y && my <= b.y + b.size;
   }
 
-  // The chest with a number badge. Drawn every frame (unless the interface is hidden).
+  // chest with number badge
   drawChest(assets, inventory) {
     this.pulse = Math.max(0, this.pulse - deltaTime / 400);
     const b = this.box();
@@ -50,7 +47,7 @@ class Collection {
     translate(cx, cy);
     scale(grow);
     if (assets.ok("ui/chest")) {
-      // fit the picture inside the box without squashing it
+      // fits  picture inside the box without squashing it
       const img = assets.get("ui/chest");
       const k = b.size / Math.max(img.width, img.height);
       image(
@@ -61,7 +58,7 @@ class Collection {
         img.height * k,
       );
     } else {
-      // no picture yet: a simple brown box
+      // no picture yet, a simple brown box
       noStroke();
       fill(139, 94, 52);
       rect(-b.size * 0.4, -b.size * 0.25, b.size * 0.8, b.size * 0.55, 4);
@@ -69,7 +66,7 @@ class Collection {
       rect(-b.size * 0.06, -b.size * 0.08, b.size * 0.12, b.size * 0.2);
     }
 
-    // the number badge on the top-right corner
+    // number badge on the top-right corner
     const r = 13 * hud.s;
     const bx = b.size * 0.38,
       by = -b.size * 0.38;
@@ -85,9 +82,9 @@ class Collection {
     pop();
   }
 
-  // The chest window. Your picture already shows the 16 flowers. We add, on top of it:
-  // a dark cover on flowers you have never collected, and a Minecraft-style number in the
-  // bottom-right corner of every slot you have collected.
+  // chest window
+  // add on top of picture a dark cover on flowers user havs never collected,
+  // and number counts of collected flower
   drawWindow(assets, inventory) {
     if (!this.isOpen) return;
     const P = PANELS.chest;
@@ -104,7 +101,7 @@ class Collection {
         rect(b.x, b.y, b.w, b.h);
       }
       if (n > 0) {
-        // white number with a dark outline, like the item counts in Minecraft
+        //item count
         textAlign(RIGHT, BOTTOM);
         textSize(b.h * 0.3);
         stroke(40, 40, 40);

@@ -6,19 +6,20 @@ const PALETTE = {
   water: "#9BC8DE",
 };
 
-// Hud: the on-screen interface (clock, tool buttons, plant status and messages).
+// clock, tool buttons, plant status and messages
 class Hud {
   constructor() {
     this.visible = true;
     this.toast = { text: "", until: 0 };
   }
 
-  // Show a short message near the bottom that fades out.
+  // message with fade out
   say(msg) {
     this.toast = { text: msg, until: millis() + 2400 };
   }
 
-  // Everything is multiplied by s, so the interface scales with the window.
+  // scale factor so the interface scales with the window
+  // smaller window and a bigger window will look the same.
   get s() {
     return Math.min(width / 960, height / 600);
   }
@@ -34,11 +35,11 @@ class Hud {
       if (!video.ready) label = "Loading video...";
       else if (clock.paused) label += " - paused";
       else if (clock.timeScale !== 1) label += ` - x${clock.timeScale}`;
-      this.pill(pad, pad, label, s, false, true); // true = steady digits, so the clock does not jiggle
+      this.pill(pad, pad, label, s, false, true); // fix clock jiggle
 
       if (plant) {
         this.drawStatus(plant, width - pad - 210 * s, pad, 210 * s, s);
-        // the flower's name at the bottom, just above where the messages pop up
+        // show plant name when hovered
         textSize(18 * s);
         textAlign(CENTER, CENTER);
         this.shadowText(
@@ -76,8 +77,7 @@ class Hud {
     }
   }
 
-  // Text with a dark shadow behind it (like Minecraft), so it stays readable on any background.
-  // alpha = 0-255, how visible the text is (the toast fades out with it).
+  // shadow for readability
   shadowText(str, x, y, s, alpha) {
     noStroke();
     fill(20, 14, 10, alpha * 0.85);
@@ -86,9 +86,8 @@ class Hud {
     text(str, x, y);
   }
 
-  // steady = true gives every digit the same width (the widest one). The Minecraft font is
-  // proportional ("1" is narrower than "0"), so without this the clock chip would grow and
-  // shrink as the time changes.
+  // when steady = true every digit set to same same width (the widest one).
+  // without this the clock will grow and shrink (jitter)
   pill(x, y, label, s, active, steady = false) {
     textSize(14 * s);
     const padX = 12 * s;
@@ -96,8 +95,14 @@ class Hud {
     if (steady)
       for (let d = 0; d <= 9; d++) cell = Math.max(cell, textWidth(String(d)));
     const isDigit = (ch) => steady && ch >= "0" && ch <= "9";
-    let textW = 0;
-    for (const ch of label) textW += isDigit(ch) ? cell : textWidth(ch);
+    // calibrating pill and text width
+    const charW = (ch) =>
+      ch === " " ? textWidth("a a") - textWidth("aa") : textWidth(ch);
+    let textW = textWidth(label); // normal labels: measure the whole text, so it always fits
+    if (steady) {
+      textW = 0;
+      for (const ch of label) textW += isDigit(ch) ? cell : charW(ch);
+    }
     const w = textW + padX * 2;
     const h = 30 * s;
     noStroke();
@@ -115,7 +120,7 @@ class Hud {
           px += cell;
         } else {
           text(ch, px, y + h / 2 + 1);
-          px += textWidth(ch);
+          px += charW(ch);
         }
       }
     }
@@ -130,7 +135,7 @@ class Hud {
     rect(x, y, Math.max(h, (w * constrain(value, 0, 100)) / 100), h, h / 2);
   }
 
-  // The three tool buttons, centred along the bottom.
+  // Bottom 3 tool buttons
   drawTools(tools, s, pad) {
     const labels = tools.tools.map((t) => `${t.key.toUpperCase()}  ${t.label}`);
     textSize(14 * s);
@@ -138,7 +143,7 @@ class Hud {
     const total =
       widths.reduce((a, b) => a + b, 0) + 10 * s * (labels.length - 1);
     let x = width / 2 - total / 2;
-    const y = height - pad - 30 * s;
+    const y = height - pad - 42 * s;
     tools.tools.forEach((t, i) => {
       this.pill(x, y, labels[i], s, tools.current === t.id);
       x += widths[i] + 10 * s;

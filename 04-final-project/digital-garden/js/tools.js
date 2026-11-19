@@ -1,4 +1,4 @@
-// ToolManager: keeps track of the selected action (plant / water / clear).
+// ToolManager keeps track of the selected action (plant / water / clear).
 class ToolManager {
   constructor() {
     this.tools = [
@@ -9,12 +9,12 @@ class ToolManager {
     this.current = "plant";
   }
 
-  // The tool that is selected right now (the whole object, so we can read its icon).
+  // tool that is selected right now
   get active() {
     return this.tools.find((t) => t.id === this.current);
   }
 
-  // Returns true if the key matched a tool.
+  // returns true if the key matched a tool.
   select(key) {
     const tool = this.tools.find((t) => t.key === key.toLowerCase());
     if (!tool) return false;

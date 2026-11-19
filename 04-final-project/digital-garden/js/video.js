@@ -1,4 +1,4 @@
-// GardenVideo: remote control for the bg video according to what the clock says.
+// GardenVideo remotely controls the bg video according to what the clock says.
 class GardenVideo {
   constructor(el) {
     this.el = el;
@@ -11,33 +11,34 @@ class GardenVideo {
     if (el.error) this.failed = true;
   }
 
-  // True when there is enough picture to run the garden against.
-  // Tells the game when it is safe to start the clock
+  // true when there is enough picture to run the garden against
+  // tells the game when it is safe to start the clock
   get ready() {
     // >= 3 means enough data to play
     if (this.el.readyState >= 3) this.loaded = true; // once loaded, a brief buffering after a seek will not stall the clock
-    // If the video failed we carry on without it
+    // if the video failed we carry on without it
     return this.failed || this.el.error !== null || this.loaded;
   }
 
-  // Calls every frame, after the clock has ticked.
+  // calls every frame, after the clock has ticked.
   follow(clock) {
     if (this.el.error) this.failed = true;
     if (this.failed) return;
     const el = this.el;
 
-    // One garden day = one pass of the video.
+    // one garden day = one pass of the video.
     if (el.duration) clock.dayLengthSeconds = el.duration;
 
-    // The video plays and pauses with the clock.
+    // video plays and pauses with the clock.
     if (clock.paused && !el.paused) el.pause();
     else if (!clock.paused && el.paused) el.play().catch(() => {});
 
-    // Play the video as fast as the clock runs (the debug speeds 4x and 12x included).
+    // play the video as fast as the clock runs (the debug speeds 4x, 12x and 16x included).
     if (el.playbackRate !== clock.timeScale) el.playbackRate = clock.timeScale;
 
-    // Keep the picture close to where the clock says it should be. The faster the video runs,
-    // the more it can wobble, so the allowed gap grows a little with the speed.
+    // keep the picture close to where the clock says it should be.
+    // the faster the video runs, the more it can wobble,
+    // so the allowed gap grows a little with the speed.
     if (!clock.paused && !el.seeking && el.duration) {
       const day = clock.dayLengthSeconds;
       let drift = el.currentTime - clock.videoTime;
@@ -48,7 +49,7 @@ class GardenVideo {
     }
   }
 
-  // Show red message if the file is missing, since that is the most likely mistake.
+  // show red message if the file is missing
   drawWarning() {
     if (this.el.error) this.failed = true;
     if (!this.failed) return;

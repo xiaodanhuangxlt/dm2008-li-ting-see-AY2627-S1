@@ -4,7 +4,7 @@ const SOUND_FILES = {
   shovel: ["sounds/shovel.mp3"],
   pop: ["sounds/pop.mp3"], // a flower was collected
   ready: ["sounds/ready.wav"], // a plant just became ready to collect (the star badge appears)
-  error: ["sounds/error.wav"], // you tried to plant on a square that already has a plant
+  error: ["sounds/error.wav"], // you tried to plant on a square that already has a plant / shovel a spot with no dead plant etc.
 };
 const SOUND_VOLUME = {
   plant: 0.6,
@@ -13,10 +13,10 @@ const SOUND_VOLUME = {
   pop: 0.6,
   ready: 0.6,
   error: 0.6,
-}; // 0 = silent, 1 = full
+}; // 0 -1, 0 is silent
 
 const POP_MAX = 10; // at most this many pops for one collect, however many flowers you pick
-const POP_GAP = 70; // milliseconds between pops, so they ripple instead of piling up
+const POP_GAP = 70; // ms between pops so the sound effect ripple instead of piling up
 
 class Sounds {
   constructor() {
@@ -34,7 +34,7 @@ class Sounds {
     });
   }
 
-  // Play one sound. delay = milliseconds to wait first.
+  // play one sound. delay = ms to wait first.
   play(name, delay = 0) {
     const options = this.clips[name];
     if (!options || options.length === 0) return;
@@ -43,13 +43,13 @@ class Sounds {
       // a copy, so the same sound can overlap itself (a plain clip would restart instead)
       const copy = clip.cloneNode();
       copy.volume = clip.volume;
-      copy.play().catch(() => {}); // browsers block sound until the first click: ignore that
+      copy.play().catch(() => {}); // browsers block sound until the first click, need to ignore that
     };
     if (delay > 0) setTimeout(go, delay);
     else go();
   }
 
-  // The collect pop: one per flower collected, but never more than POP_MAX.
+  // collecting flower pop sound: one per flower collected, but never more than POP_MAX (10).
   pops(count) {
     for (let i = 0; i < Math.min(count, POP_MAX); i++)
       this.play("pop", i * POP_GAP);

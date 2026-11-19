@@ -1,20 +1,18 @@
-// Plant: lifecycle simulation.
-// Growth stage (growth 0-100) and health state (health 0-100) are tracked separately,
-// so a blooming flower can wilt without reverting to a seed.
-// All rates are "per simulated second" (1 simulated second = 1 real second at 1x speed).
+// plant's lifecycle simulation.
+// stage of growth and health are tracked separately
 class Plant {
   static CFG = {
     startMoisture: 60,
     startHealth: 100,
     moistureDrain: 0.035, // moisture lost per second (60 -> 30 in ~850s, about 1 garden week)
-    waterAmount: 35, // added per watering, capped at 100
-    healthyMin: 30, // moisture band where the plant thrives
+    waterAmount: 20, // added per watering, capped at 100
+    healthyMin: 30, // moisture band where the plant thrives (30 - 85, full growth and health recovers)
     healthyMax: 85,
-    dryBelow: 20, // below this, health starts dropping
+    dryBelow: 20, // below this moisture plant is dry and health starts dropping
     dryDamage: 0.3, // health lost per second at 0 moisture (scales up from 0 at moisture 20)
     soggyAbove: 90, // above this, health starts dropping (overwatering)
-    soggyDamage: 0.07, // health lost per second when moisture is 100
-    recoverRate: 0.15, // health gained per second while moisture is 30-85. Wilted (50) to healthy again (75) takes about 1.4 garden days
+    soggyDamage: 0.07, // health lost/s when moisture is 100 (too moist)
+    recoverRate: 0.15, // health gained/s while moisture is 30-85. Wilted (50) to healthy again (75) takes about 1.4 garden days
     wiltBelow: 50, // health below this -> wilted
     recoverAbove: 75, // wilted plant is healthy again above this (hysteresis)
     growthRate: 0.04, // growth per second in ideal conditions (~2500s, about 3 garden weeks, to full bloom)
@@ -26,7 +24,7 @@ class Plant {
   };
 
   static SWAY = 0.02; // gentle sprite sway in radians (set 0 for none)
-  // species: one entry of SPECIES (see assets.js). Omit it to get a random flower.
+  // species: one entry of SPECIES (in assets.js). Omit this to get a random flower.
   constructor(species) {
     const c = Plant.CFG;
     this.species =
@@ -37,7 +35,7 @@ class Plant {
     this.state = "healthy"; // healthy | wilted | dead
     this.age = 0;
 
-    // Visual-only values (smoothed so changes feel gradual).
+    // visual values so changes look gradual
     this.droopVis = 0;
     this.wiltVis = 0;
     this.deadVis = 0;
@@ -59,17 +57,17 @@ class Plant {
     return this.state === "dead";
   }
 
-  // Fully grown and still alive: it can be collected.
+  // fully grown, alive, well moistured = can collect
   get isReady() {
     return !this.isDead && this.growth >= Plant.CFG.readyAt && !this.isThirsty;
   }
 
-  // Alive but the soil is getting dry: time to water.
+  // alive but soil dry = need to water
   get isThirsty() {
     return !this.isDead && this.moisture < Plant.CFG.healthyMin;
   }
 
-  // Which status picture (if any) should float above this plant?
+  // status picture bobbing on top of plant
   get badge() {
     if (this.isDead) return "dead";
     if (this.isThirsty) return "thirsty";
@@ -83,7 +81,7 @@ class Plant {
     return true;
   }
 
-  // Multiplier (0-1) on growth speed from current moisture.
+  // multiplier (0-1) on growth speed from current moisture.
   growthFactor() {
     const c = Plant.CFG;
     let f = 1;
@@ -135,7 +133,7 @@ class Plant {
       }
     }
 
-    // Visual targets, eased toward so droop/colour change gradually.
+    // visual targets, eased toward so droop &colour change gradually.
     let droopTarget, wiltTarget;
     if (this.isDead) {
       droopTarget = 1;
@@ -167,7 +165,7 @@ class Plant {
 
   // drawing sprites
 
-  // The sprite for a growth stage. Returns [alive image key, dead image key].
+  // sprite for a growth stage. Returns [alive image key, dead image key].
   spriteKeys(stage) {
     const sp = this.species.id;
     if (stage === "seed") return ["plants/seed", "plants/seed_dead"];
@@ -180,10 +178,12 @@ class Plant {
     return [`plants/${sp}_bloom`, `plants/${sp}_bloom_dead`];
   }
 
-  // x, y = the plant's foot (on the soil). unit = screen pixels per sprite pixel.
-  // t = seconds, for sway. Your partner drew an alive and a dead frame for every stage.
-  // There is no wilted frame, so "wilted" is made here in code: the alive sprite is tinted
-  // yellow-brown, squashed a little and leaned over. As the plant dies, the dead sprite fades in.
+  // x, y = the plant's foot (on the soil).
+  // unit = screen pixels per sprite pixel.
+  // t = seconds, for sway.
+  // "wilted" is made here in code since there are no assets for that:
+  // the alive sprite is tinted yellow-brown, squashed a little and leaned over.
+  // when the plant dies, dead sprite fades in.
   draw(x, y, unit, t, assets) {
     const wilt = Math.min(1, this.wiltVis / 0.6); // 0 = fresh, 1 = fully wilted
     const dead = this.deadVis; // 0 = alive, 1 = dead
@@ -199,13 +199,13 @@ class Plant {
     layers.forEach(([stage, stageAlpha]) => {
       const [aliveKey, deadKey] = this.spriteKeys(stage);
 
-      // alive sprite (fades out as the plant dies)
+      // alive sprite (fades out when the plant dies)
       const alive = assets.get(aliveKey);
       const aliveAlpha = (1 - dead) * stageAlpha;
       if (alive && aliveAlpha > 0.01) {
         push();
         rotate(sway + this.leanDir * this.droopVis * 0.3); // lean over
-        scale(1, 1 - this.droopVis * 0.15); // sag a little
+        scale(1, 1 - this.droopVis * 0.15); // squash a little
         tint(
           255 - 80 * wilt,
           255 - 105 * wilt,
@@ -214,11 +214,11 @@ class Plant {
         );
         const w = alive.width * unit;
         const h = alive.height * unit;
-        image(alive, -w / 2, -h, w, h); // anchor = bottom centre
+        image(alive, -w / 2, -h, w, h); // anchor at bottom centre of square
         pop();
       }
 
-      // dead sprite (fades in as the plant dies)
+      // dead sprite (fades in when plant dies)
       const gone = assets.get(deadKey);
       const deadAlpha = dead * stageAlpha;
       if (gone && deadAlpha > 0.01) {

@@ -1,14 +1,10 @@
-// The video is flat, but the garden is made of squares.
-// This file stores where eac hof the 128 soil squares is on the video
-// and converts between video coordinates and screen coordiantes
-// so the mouse, the grid and the plants all line up.
-
+// converts between video coordinates and screen coordinates so the mouse, grid and plants all line up.
 const VIDEO_W = 1920;
 const VIDEO_H = 1080;
 const BED_COLS = 8;
 const BED_ROWS = 4;
 
-// Corner coordinates of each bed's soil surface, in video pixels, in order TL TR BR BL
+// corner coordinates of each bed's soil surface, in video pixels, in order TL TR BR BL
 const BEDS = {
   TL: [
     [534, 290], // TL
@@ -36,7 +32,7 @@ const BEDS = {
   ],
 };
 
-// Used AI to generate the perspective math so the squares line up with the ones in the video
+// used AI to generate the perspective math so the squares line up with the ones in the video
 // and which square is the mouse on.
 
 // The perspective-correct version: give it a position u, v from 0 to 1 across a bed
@@ -73,7 +69,7 @@ function makeProjector(q) {
   };
 }
 
-// Is the mouse inside this square?
+// is the mouse inside this square?
 function pointInQuad(px, py, q) {
   let sign = 0;
   for (let i = 0; i < 4; i++) {
@@ -183,9 +179,18 @@ class SoilGrid {
   rect(a, b) {
     if (!a) return [];
     if (!b || b.bed !== a.bed) return [a];
-    const c0 = Math.min(a.col, b.col), c1 = Math.max(a.col, b.col);
-    const r0 = Math.min(a.row, b.row), r1 = Math.max(a.row, b.row);
-    return this.squares.filter((s) => s.bed === a.bed && s.col >= c0 && s.col <= c1 && s.row >= r0 && s.row <= r1);
+    const c0 = Math.min(a.col, b.col),
+      c1 = Math.max(a.col, b.col);
+    const r0 = Math.min(a.row, b.row),
+      r1 = Math.max(a.row, b.row);
+    return this.squares.filter(
+      (s) =>
+        s.bed === a.bed &&
+        s.col >= c0 &&
+        s.col <= c1 &&
+        s.row >= r0 &&
+        s.row <= r1,
+    );
   }
 
   // Draw one square as a shape,

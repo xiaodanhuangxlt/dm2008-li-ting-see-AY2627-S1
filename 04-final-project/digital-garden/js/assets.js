@@ -1,13 +1,7 @@
-// Assets: loads every sprite the game uses from the assets/ folder.
-//
-// The sprites are your partner's pixel art, already cleaned and cropped by tools/prepare_sprites.py.
-// If a file is missing or fails to load, a loud magenta tile with its name is shown instead
-// (and the console lists it), so a bad filename is obvious right away.
-//
-// NOTE: sprites load over HTTP, so run the sketch from a local server
-// (VS Code Live Server), not by double-clicking index.html.
-
-// The 16 flowers: id = the filename part, name = what the player sees. "bush" ones (tall, leafy) grow from the bushy shoot; the rest from the thin one.
+// id = the filename part
+// name = what the user sees
+// bush grow from the bushy shoot
+// the rest grow from the thin shoot.
 const SPECIES = [
   { id: "whitetulip", name: "White Tulip", bush: false },
   { id: "pinktulip", name: "Pink Tulip", bush: false },
@@ -27,11 +21,9 @@ const SPECIES = [
   { id: "rosebush", name: "Rose Bush", bush: true },
 ];
 
-// How many sprite pixels fit across one soil square. Smaller number = bigger plants.
-// Try 140 for bigger flowers or 280 for smaller ones.
 const SPRITE_PX_PER_SQUARE = 200;
 
-// Cut away the empty (transparent) border around a picture.
+// cut away the empty transparent border around a picture.
 function trimTransparent(img) {
   img.loadPixels();
   let x0 = img.width,
@@ -58,7 +50,7 @@ class Assets {
     this.missing = [];
   }
 
-  // Keys map straight to files: "plants/lily_bloom" -> assets/plants/lily_bloom.png
+  // keys to map directly with files: "plants/lily_bloom" = assets/plants/lily_bloom.png
   loadAll() {
     [
       "seed",
@@ -73,18 +65,18 @@ class Assets {
         this.load(`plants/${s.id}_${n}`),
       );
     });
-    // the three tool icons (your Minecraft images)
+    // tool icons
     ["watercan", "shovel", "bundle"].forEach((n) => this.load(`tools/${n}`));
 
-    // the bundle window for choosing a flower (optional: if it is missing, a plain window is drawn with code)
+    // bundle window (choosing flower)
     this.load("ui/BundleInventory");
     // the three status pictures (trim cuts away any empty border)
     ["skull", "star", "waterdroplet"].forEach((n) =>
       this.load(`ui/${n}`, { trim: true }),
     );
-    // the chest icon in the corner (if it is missing, a plain brown box is drawn)
+    // chest icon
     this.load("ui/chest", { trim: true });
-    // the chest window that shows your collection
+    // chest window (flower collection)
     this.load("ui/ChestInventory");
   }
 
@@ -102,12 +94,12 @@ class Assets {
     );
   }
 
-  // true only if the real file loaded (not the magenta stand-in)
+  // true only if real files are loaded
   ok(key) {
     return !!this.images[key] && !this.missing.includes(key);
   }
 
-  // Returns the image, or null while it is still loading.
+  // returns the image, or null while it is still loading.
   get(key) {
     return this.images[key] || null;
   }

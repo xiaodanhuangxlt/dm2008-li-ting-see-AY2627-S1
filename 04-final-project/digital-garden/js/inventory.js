@@ -1,5 +1,5 @@
-// Inventory: counts how many flowers of each species you have collected.
-// The counts are saved in the browser (localStorage), so they are still there next time.
+// counts how many flowers of each species you have collected.
+// saved in browser so they are still there the next time you open.
 const SAVE_KEY = "digitalGarden.collection";
 
 class Inventory {
@@ -8,12 +8,12 @@ class Inventory {
     this.load();
   }
 
-  // How many flowers in total.
+  // total flower num
   get total() {
     return Object.values(this.counts).reduce((sum, n) => sum + n, 0);
   }
 
-  // How many of one species (0 if never collected).
+  // how many of each
   count(speciesId) {
     return this.counts[speciesId] || 0;
   }
@@ -23,8 +23,7 @@ class Inventory {
     this.save();
   }
 
-  // try / catch: some browsers block storage (private windows). The game still works,
-  // it just won't remember the collection.
+  // some browsers will block storage
   save() {
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(this.counts));

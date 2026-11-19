@@ -1,15 +1,4 @@
-// The inventory windows (pictures you made) and the maths to find their slots.
-// Step 9 uses the bundle window to choose a flower. Step 11 adds the chest window.
-
-// One entry per window picture. All the numbers are measured on YOUR picture, in its own pixels.
-//   key        the file, without "assets/" and ".png"
-//   width      the picture's width in pixels, height = its height
-//   colX       the left edge of each of the 4 columns of slots
-//   rowY       the top edge of each of the 4 rows of slots
-//   slotW/H    the width and height of one slot
-//   showHeight how tall the window is on screen (at normal size). Bigger number = bigger window
-// (If you change your picture, measure again. Turn on B while a window is open to see the
-// outlines the game thinks the slots have.)
+// bundle and chest windows
 const PANELS = {
   bundle: {
     key: "ui/BundleInventory",
@@ -33,9 +22,8 @@ const PANELS = {
   },
 };
 
-// ---- shared helpers: used by the bundle window now and by the chest window in Step 11 ----
-
-// Where the window sits on screen: centred. "sc" = screen pixels per picture pixel.
+// "sc" is screen pixels per picture pixel
+// where both windows will appear on screen
 function panelLayout(P) {
   const sc = (P.showHeight * hud.s) / P.height;
   const w = P.width * sc,
@@ -44,7 +32,7 @@ function panelLayout(P) {
   return { sc, w, h, x: width / 2 - w / 2, y: height / 2 - h / 2 - 40 * hud.s };
 }
 
-// The on-screen box of slot number i (0-15), counting left to right, top to bottom.
+// slot number of flowers 0 - 15
 function slotBox(i, L, P) {
   const col = i % 4,
     row = Math.floor(i / 4);
@@ -56,7 +44,7 @@ function slotBox(i, L, P) {
   };
 }
 
-// Which slot (0-15) is under this point? -1 if none.
+// finding the slot index under mouse
 function slotAt(mx, my, P) {
   const L = panelLayout(P);
   for (let i = 0; i < 16; i++) {
@@ -71,8 +59,7 @@ function overPanel(mx, my, P) {
   return mx >= L.x && mx <= L.x + L.w && my >= L.y && my <= L.y + L.h;
 }
 
-// Darken the screen, then draw the window picture. Returns its layout.
-// If the picture file is missing, a brown box with empty slots is drawn instead.
+// darken the screen behind and draw window picture
 function drawPanel(assets, P) {
   const L = panelLayout(P);
   noStroke();
@@ -96,8 +83,7 @@ function drawPanel(assets, P) {
   return L;
 }
 
-// A flower's bloomed picture shrunk to fit inside a slot. Only needed when your window
-// picture is missing (your own picture already has the flowers drawn in it).
+// when window picture is missing, draw the bloomed flower picture shrunk to fit inside a slot.
 function drawSlotFlower(assets, i, b, dim) {
   const pic = assets.get(`plants/${SPECIES[i].id}_bloom`);
   if (!pic) return;
@@ -109,7 +95,7 @@ function drawSlotFlower(assets, i, b, dim) {
   noTint();
 }
 
-// Debug (B): outline every slot to check the numbers in PANELS against your picture.
+// debug (press B): outline every slot to check the numbers in PANELS against uploaded picture
 function drawSlotOutlines(L, P) {
   if (!showBounds) return;
   noFill();
@@ -122,7 +108,7 @@ function drawSlotOutlines(L, P) {
   noStroke();
 }
 
-// Text just under the window (the name of the flower under the mouse).
+// name of flower just under the window
 function drawCaption(L, str) {
   textAlign(CENTER, TOP);
   textSize(16 * hud.s);
@@ -133,7 +119,7 @@ function drawCaption(L, str) {
   noStroke();
 }
 
-// Picker: the bundle window where you choose which flower to plant.
+// picker is the bundle window
 class Picker {
   constructor() {
     this.isOpen = false;
