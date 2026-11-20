@@ -1,7 +1,5 @@
 # Final Project — Where Flowers Bloom
 
----
-
 ### The Project
 
 Where Flowers Bloom is an interactive garden that runs as a fullscreen wallpaper on a laptop. A Minecraft garden video plays in the background, and a p5.js canvas on top lets you plant, water and collect flowers in the video's soil squares. Time keeps passing while the page is open, so flowers grow, get thirsty, wilt and die if you forget about them. It responds to the mouse and keyboard: you pick a tool, click or drag across squares, and the garden answers with growth, badges and sound.
@@ -29,7 +27,7 @@ Where Flowers Bloom is an interactive garden that runs as a fullscreen wallpaper
 
 ### Output
 
-![screenshot](readme-assets/image-08-minecraft-font-ui)
+![screenshot](readme-assets/image-08-minecraft-font-ui.jpg)
 
 <!-- [Watch Online](https://your-link-here) -->
 

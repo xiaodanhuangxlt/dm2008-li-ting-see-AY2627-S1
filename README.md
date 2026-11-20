@@ -1,7 +1,7 @@
 # DM2008 — Li Ting See
 
 **Course:** DM2008: Programming for Interaction  
-**Academic Year:** AY2526 Semester 2  
+**Academic Year:** AY2627 Semester 1  
 **Nanyang Technological University, Singapore**
 
 ---
@@ -25,7 +25,8 @@ This is my personal mono-repo for DM2008. It contains all my work across the sem
 
 ---
 
-## 🖼️ Project Highlights
+<!--
+## 🖼️ Project Highlights -->
 
 <!-- Optional: Showcase your favourite output from the semester here -->
 <!-- Add a screenshot or a short description of your best work -->
